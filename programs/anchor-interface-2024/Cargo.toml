@@ -1,0 +1,24 @@
+[package]
+name = "anchor-interface-2024"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "anchor_interface_2024"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { git = "https://github.com/coral-xyz/anchor", features = [
+    "interface-instructions",
+] }
+spl-discriminator = "0.1"
+spl-tlv-account-resolution = "0.4.0"
+spl-transfer-hook-interface = "0.3.0"
