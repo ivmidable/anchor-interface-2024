@@ -30,6 +30,7 @@ pub mod anchor_interface_2024 {
         metas: Vec<AnchorExtraAccountMeta>,
     ) -> Result<()> {
         let extra_metas_account = &ctx.accounts.extra_metas_account;
+
         let metas: Vec<ExtraAccountMeta> = metas.into_iter().map(|meta| meta.into()).collect();
         let mut data = extra_metas_account.try_borrow_mut_data()?;
         ExtraAccountMetaList::init::<ExecuteInstruction>(&mut data, &metas)?;
@@ -38,7 +39,13 @@ pub mod anchor_interface_2024 {
     }
 
     #[interface(spl_transfer_hook_interface::execute)]
-    pub fn execute(ctx: Context<Execute>) -> Result<()> {
+    pub fn execute(ctx: Context<Execute>, intro: Introspect) -> Result<()> {
+        match intro {
+            Introspect::AddInstructionAndMetas { metas } => add_instructions_and_meta(metas, &ctx),
+            Introspect::Validate {} => validate_something(&ctx),
+            Introspect::SendNft { destination } => send_nft(destination, &ctx),
+            _ => unimplemented!(),
+        };
         //let source_account = &ctx.accounts.source_account;
         //let destination_account = &ctx.accounts.destination_account;
 
@@ -95,6 +102,35 @@ pub struct Execute<'info> {
 
     /// CHECK: Example extra PDA for transfer #2
     pub secondary_authority_2: UncheckedAccount<'info>,
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub enum Introspect {
+    AddInstructionAndMetas { metas: Vec<AnchorExtraAccountMeta> },
+    Validate {},
+    SendNft { destination: Pubkey },
+}
+
+pub fn add_instructions_and_meta(
+    metas: Vec<AnchorExtraAccountMeta>,
+    ctx: &Context<Execute>,
+) -> Result<()> {
+    let data = ctx.accounts.extra_metas_account.try_borrow_data()?;
+    ExtraAccountMetaList::check_account_infos::<PlaceholderInstruction>(
+        &ctx.accounts.to_account_infos(),
+        &TransferHookInstruction::Execute { amount: 10 }.pack(),
+        &ctx.program_id,
+        &data,
+    )?;
+    unimplemented!()
+}
+
+pub fn validate_something(ctx: &Context<Execute>) -> Result<()> {
+    unimplemented!()
+}
+
+pub fn send_nft(destination: Pubkey, ctx: &Context<Execute>) -> Result<()> {
+    unimplemented!()
 }
 
 #[derive(SplDiscriminate)]
